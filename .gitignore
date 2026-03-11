@@ -1,0 +1,8 @@
+# Runtime data directory (generated on first login)
+data/
+
+# Password hash generated from config admin_password
+data/admin.hash
+
+# PHP built-in server artifacts
+*.log

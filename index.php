@@ -1,0 +1,194 @@
+<?php
+require_once 'config.php';
+session_start();
+$isLoggedIn = !empty($_SESSION['paste_admin']);
+
+// Prevent caching
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
+
+// Show error messages
+if (!empty($_GET['error'])) {
+    if ($_GET['error'] === 'notfound') {
+        $message = 'Error: Paste not found.';
+    } elseif ($_GET['error'] === 'expired') {
+        $message = 'Error: This paste has expired.';
+    }
+}
+
+// If there's an ID in query string, redirect to view
+if (!empty($_GET['id'])) {
+    header('Location: view.php?id=' . $_GET['id']);
+    exit;
+}
+
+// Handle logout
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header('Location: index.php');
+    exit;
+}
+
+// Handle new paste creation (logged in only)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isLoggedIn && (($_POST['action'] ?? '') === 'create')) {
+    $content = $_POST['content'] ?? '';
+    $filename = $_POST['filename'] ?? '';
+    $syntax = $_POST['syntax'] ?? 'plaintext';
+    $expiry = $_POST['expiry'] ?? $config['default_expiry'];
+    $burn = isset($_POST['burn']);
+    $hidden = isset($_POST['hidden']);
+    $isEncrypted = isset($_POST['is_encrypted']) && $_POST['is_encrypted'] === '1';
+    $iv = $isEncrypted ? (preg_replace('/[^A-Za-z0-9\/_+=-]/', '', $_POST['iv'] ?? '') ?? '') : '';
+    
+    if (!empty($content)) {
+        $id = bin2hex(random_bytes(8));
+        $created = time();
+        
+        // Calculate expiry timestamp
+        $expires = 'never' === $expiry ? null : time() + [
+            '5min' => 300,
+            '1hour' => 3600,
+            '1day' => 86400,
+            '1week' => 604800
+        ][$expiry];
+        
+        $paste = [
+            'id' => $id,
+            'content' => $content,
+            'filename' => $filename,
+            'syntax' => $syntax,
+            'created' => $created,
+            'expires' => $expires,
+            'burn' => $burn,
+            'hidden' => $hidden,
+            'encrypted' => $isEncrypted,
+            'iv' => $isEncrypted ? $iv : '',
+            'views' => 0
+        ];
+
+        file_put_contents($config['data_dir'] . "/{$id}.json", json_encode($paste));
+        header('Location: view.php?id=' . $id);
+        exit;
+    }
+}
+
+// Load and display pastes
+$pastes = [];
+$files = glob($config['data_dir'] . '/*.json') ?: [];
+foreach ($files as $file) {
+    $data = json_decode(file_get_contents($file), true);
+    if ($data) {
+        if (isset($data['key'])) {
+            unset($data['key']);
+        }
+        // Check if expired
+        if ($data['expires'] && time() > $data['expires']) {
+            unlink($file);
+            continue;
+        }
+        $pastes[] = $data;
+    }
+}
+
+// Sort by newest
+usort($pastes, fn($a, $b) => $b['created'] - $a['created']);
+
+function timeLeft($expires) {
+    if (!$expires) return 'Never';
+    $left = $expires - time();
+    if ($left <= 0) return 'Expired';
+    if ($left < 60) return $left . 's';
+    if ($left < 3600) return floor($left / 60) . 'm';
+    if ($left < 86400) return floor($left / 3600) . 'h';
+    return floor($left / 86400) . 'd';
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo htmlspecialchars($config['site_name']); ?></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="encryption.js"></script>
+    <style>
+        textarea { height: 200px; }
+    </style>
+</head>
+<body data-base-url="<?php echo htmlspecialchars($config['base_url']); ?>">
+    <div class="header">
+        <h1>📋 <?php echo htmlspecialchars($config['site_name']); ?></h1>
+        <?php if ($isLoggedIn): ?>
+            <a href="?logout=1" class="login-btn">Logout</a>
+        <?php else: ?>
+            <a href="login.php" class="login-btn">Login to create</a>
+        <?php endif; ?>
+    </div>
+
+    <?php if ($message): ?>
+        <div class="message"><?php echo htmlspecialchars($message); ?></div>
+    <?php endif; ?>
+    
+<?php if ($isLoggedIn): ?>
+    <div class="new-form">
+        <h3>New Paste</h3>
+        <form method="post" id="paste-form">
+            <input type="hidden" name="action" value="create">
+            <input type="text" name="filename" placeholder="Filename (optional)"><br>
+            <textarea name="content" placeholder="Paste content here..."></textarea><br>
+            <select name="syntax">
+                <option value="plaintext">Plain Text</option>
+                <option value="code">Code (auto-detect)</option>
+            </select>
+            <select name="expiry" id="expirySelect">
+                <option value="never">Never expire</option>
+                <option value="5min">5 minutes</option>
+                <option value="1hour">1 hour</option>
+                <option value="1day">1 day</option>
+                <option value="1week">1 week</option>
+            </select>
+            <br>
+            <label><input type="checkbox" name="burn" id="burnCheck" onchange="toggleExpiry()"> Burn after reading</label>
+            <label style="margin-left: 15px;"><input type="checkbox" name="hidden"> Hidden (only visible when logged in)</label>
+            <input type="hidden" name="is_encrypted" value="0">
+            <input type="hidden" name="iv" value="">
+            <script>
+                function toggleExpiry() {
+                    document.getElementById('expirySelect').disabled = document.getElementById('burnCheck').checked;
+                }
+                toggleExpiry();
+            </script>
+            <br><br>
+            <button type="submit" name="create" class="button-like">Create Paste</button>
+        </form>
+    </div>
+    <?php endif; ?>
+    
+    <div class="paste-list">
+        <h3>Recent Pastes</h3>
+        <?php if (empty($pastes)): ?>
+            <p>No pastes yet.</p>
+        <?php else: ?>
+            <?php foreach ($pastes as $paste): ?>
+                <?php if (!empty($paste['hidden']) && !$isLoggedIn) continue; ?>
+                <div class="paste-item">
+                    <a href="<?php echo htmlspecialchars($config['base_url'] . 'view.php?id=' . $paste['id']); ?>" data-paste-id="<?php echo htmlspecialchars($paste['id']); ?>"><?php echo !empty($paste['filename']) ? htmlspecialchars($paste['filename']) : htmlspecialchars($paste['id']); ?></a>
+                    <span class="paste-meta">
+                        - <?php echo 'code' === $paste['syntax'] ? 'Code' : 'Plain Text'; ?>
+                        - <?php echo date('Y-m-d H:i', $paste['created']); ?>
+                        - <?php echo timeLeft($paste['expires']); ?>
+                        <?php if ($paste['burn']): ?> - 🔥<?php endif; ?>
+                        <?php if (!empty($paste['encrypted'])): ?> - 🔐<?php endif; ?>
+                        <?php if (!empty($paste['hidden'])): ?> - 🔒<?php endif; ?>
+                    </span>
+                    <?php if ($isLoggedIn): ?>
+                        <a href="delete.php?id=<?php echo $paste['id']; ?>" style="color: red; margin-left: 10px;" onclick="return confirm('Delete this paste?')">[Delete]</a>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+</body>
+</html>

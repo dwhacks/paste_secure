@@ -1,0 +1,43 @@
+/* Base styles */
+body { font-family: monospace; background: #0d0d0d; color: #00ff00; margin: 0; padding: 20px; }
+h1, h2, h3 { text-align: center; }
+a { color: #00ff00; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Header */
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.login-btn { color: #00ff00; text-decoration: none; }
+
+/* Forms */
+input, button, select, textarea { padding: 10px; margin: 5px 0; background: #222; color: #ddd; border: 1px solid #444; box-sizing: border-box; }
+input[type="text"], input[type="password"] { width: 100%; }
+input::placeholder, textarea::placeholder { color: #666; }
+textarea { width: 100%; height: 200px; font-family: monospace; }
+.button-like { display: inline-flex; align-items: center; justify-content: center; height: 40px; min-width: 80px; padding: 0 16px; }
+button { background: #00ff00; color: #000; border: none; cursor: pointer; height: 40px; padding: 0 16px; }
+button:hover { background: #00aa00; }
+.secondary-btn { display: inline-flex; align-items: center; justify-content: center; background: #333; color: #00ff00; border: 1px solid #00ff00; text-decoration: none; height: 40px; padding: 0 16px; }
+.secondary-btn:hover { background: #444; }
+select { display: inline-block; }
+
+/* Lists */
+.paste-list { max-width: 800px; margin: 0 auto; }
+.paste-item { border: 1px solid #333; padding: 10px; margin-bottom: 10px; background: #111; }
+.paste-item a { color: #00ff00; text-decoration: none; }
+.paste-item a:hover { text-decoration: underline; }
+.paste-meta { font-size: 0.8em; color: #666; }
+
+/* Content areas */
+.new-form, .content { max-width: 800px; margin: 20px auto; border: 1px solid #333; padding: 20px; background: #111; }
+.content { max-width: 900px; }
+pre { background: #1a1a1a; padding: 10px; overflow-x: auto; }
+
+/* Messages */
+.message, .error { background: #222; padding: 10px; margin-bottom: 20px; border: 1px solid #00ff00; }
+.error { color: red; border-color: red; }
+.meta { color: #666; font-size: 0.8em; margin-top: 10px; }
+.info-box { background: #1b1b1b; border: 1px solid #00aa00; padding: 12px 16px; margin-bottom: 15px; color: #b0ffb0; }
+.info-box code { color: #fff; }
+
+/* Login page specific */
+body.login-page { max-width: 400px; margin: 100px auto; }
