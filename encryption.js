@@ -145,6 +145,78 @@ function applyStoredKeysToList() {
   });
 }
 
+function handleCreationMessage() {
+  const message = document.querySelector('.message[data-created-id]');
+  if (!message) return;
+
+  const pasteId = message.dataset.createdId || '';
+  const encrypted = message.dataset.createdEnc === '1';
+  if (!pasteId) return;
+
+  const baseAttr = document.body.dataset.baseUrl || document.body.dataset.pasteBase || '/paste/';
+  const normalized = baseAttr.endsWith('/') ? baseAttr.slice(0, -1) : baseAttr;
+  const baseUrl = /^https?:/i.test(normalized) ? normalized : window.location.origin + (normalized.startsWith('/') ? normalized : '/' + normalized);
+
+  let key = retrievePendingKey(pasteId);
+  if (!key) {
+    key = getSavedKeyForPaste(pasteId);
+  }
+
+  if (encrypted && key) {
+    saveKeyForPaste(pasteId, key);
+  }
+
+  const linkBase = baseUrl + '/view.php?id=' + pasteId;
+  const fullLink = linkBase + (key ? '#' + encodeURIComponent(key) : '');
+
+  message.innerHTML = '';
+
+  if (encrypted && !key) {
+    const warn = document.createElement('div');
+    warn.textContent = 'Paste created, but the encryption key was not found in this browser. Please copy the full URL (including the #key) from the previous page or regenerate the paste.';
+    message.appendChild(warn);
+    return;
+  }
+
+  const info = document.createElement('div');
+  info.textContent = 'Paste created! Copy and save this link:';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.readOnly = true;
+  input.value = fullLink;
+
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'button-like';
+  copyBtn.textContent = 'Copy';
+  copyBtn.addEventListener('click', () => {
+    input.select();
+    input.setSelectionRange(0, input.value.length);
+    const setCopied = () => {
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => (copyBtn.textContent = 'Copy'), 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(input.value).then(setCopied).catch(() => {
+        document.execCommand('copy');
+        setCopied();
+      });
+    } else {
+      document.execCommand('copy');
+      setCopied();
+    }
+  });
+
+  const openLink = document.createElement('a');
+  openLink.href = fullLink;
+  openLink.target = '_blank';
+  openLink.rel = 'noopener';
+  openLink.className = 'button-like secondary-btn';
+  openLink.textContent = 'Open';
+
+  message.append(info, input, copyBtn, openLink);
+}
+
   async function encryptText(plainText, keyBytes, ivBytes) {
     const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt']);
     const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: ivBytes }, key, textEncoder.encode(plainText));
@@ -379,6 +451,7 @@ function handlePendingKeyOnView() {
   document.addEventListener('DOMContentLoaded', () => {
     setupCreateForm();
     setupEditForm();
+    handleCreationMessage();
     handlePendingKeyOnView();
     decryptIfNeeded();
     applyStoredKeysToList();

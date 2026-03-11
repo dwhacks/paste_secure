@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+$message = '';
 session_start();
 $isLoggedIn = !empty($_SESSION['paste_admin']);
 
@@ -68,7 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isLoggedIn && (($_POST['action'] ?
         ];
 
         file_put_contents($config['data_dir'] . "/{$id}.json", json_encode($paste));
-        header('Location: view.php?id=' . $id);
+        $query = '?created=' . urlencode($id);
+        if ($isEncrypted) {
+            $query .= '&enc=1';
+        }
+        header('Location: index.php' . $query);
         exit;
     }
 }
@@ -127,8 +132,14 @@ function timeLeft($expires) {
         <?php endif; ?>
     </div>
 
-    <?php if ($message): ?>
-        <div class="message"><?php echo htmlspecialchars($message); ?></div>
+    <?php
+        $createdId = $_GET['created'] ?? '';
+        $createdEnc = isset($_GET['enc']) && $_GET['enc'] === '1';
+    ?>
+    <?php if ($message || $createdId): ?>
+        <div class="message" <?php if ($createdId): ?>data-created-id="<?php echo htmlspecialchars($createdId); ?>" data-created-enc="<?php echo $createdEnc ? '1' : '0'; ?>"<?php endif; ?>>
+            <?php echo $message ? htmlspecialchars($message) : 'Paste created!'; ?>
+        </div>
     <?php endif; ?>
     
 <?php if ($isLoggedIn): ?>
