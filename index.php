@@ -69,11 +69,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isLoggedIn && (($_POST['action'] ?
         ];
 
         file_put_contents($config['data_dir'] . "/{$id}.json", json_encode($paste));
-        $query = '?created=' . urlencode($id);
-        if ($isEncrypted) {
-            $query .= '&enc=1';
+        if ($burn) {
+            $query = '?created=' . urlencode($id);
+            if ($isEncrypted) {
+                $query .= '&enc=1';
+            }
+            header('Location: index.php' . $query);
+        } else {
+            header('Location: view.php?id=' . $id);
         }
-        header('Location: index.php' . $query);
         exit;
     }
 }
