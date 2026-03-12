@@ -240,6 +240,20 @@ function handleCreationMessage() {
   function highlight(element) {
     if (window.hljs && element) {
       window.hljs.highlightElement(element);
+
+      const detectedContainer = document.getElementById('detected-language');
+      const detectedValue = document.getElementById('detected-language-value');
+      if (detectedContainer && detectedValue) {
+        const languageClass = Array.from(element.classList).find((cls) => cls.startsWith('language-')) || '';
+        const detected = languageClass.replace('language-', '').trim();
+        if (detected) {
+          detectedValue.textContent = detected;
+          detectedContainer.style.display = '';
+        } else {
+          detectedContainer.style.display = 'none';
+          detectedValue.textContent = '';
+        }
+      }
     }
   }
 

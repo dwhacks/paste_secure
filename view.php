@@ -139,6 +139,7 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
                 Views: <?php echo $data['views']; ?> | 
                 Expires: <?php echo timeLeft($data['expires']); ?> |
                 Created: <?php echo date('Y-m-d H:i', $data['created']); ?>
+                <span id="detected-language" style="display:none;"> | Detected: <span id="detected-language-value"></span></span>
                 <?php if ($data['burn']): ?> | 🔥 Burn after reading<?php endif; ?>
                 <?php if ($isEncryptedData): ?> | 🔐 Encrypted<?php endif; ?>
                 <?php if (!empty($data['hidden'])): ?> | 🔒 Hidden<?php endif; ?>
