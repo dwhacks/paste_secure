@@ -1,7 +1,5 @@
 ## Secure Client-Side Encrypted Pastebin
 
-[GitHub Repository](https://github.com/dwhacks/paste_secure)
-
 This project is a zero-knowledge pastebin inspired by PrivateBin. All paste
 content is encrypted in the browser before it ever touches the server, keeping
 
