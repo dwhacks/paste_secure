@@ -1,0 +1,301 @@
+body.theme-classic {
+    font-family: monospace;
+    background: #0d0d0d;
+    color: #00ff00;
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    display: block !important;
+    line-height: 1.4;
+    font-size: 14px;
+}
+
+body.theme-classic h1,
+body.theme-classic h2,
+body.theme-classic h3 {
+    text-align: center;
+    margin: 0 0 20px;
+}
+
+body.theme-classic a {
+    color: #00ff00;
+    text-decoration: none;
+}
+
+body.theme-classic a:hover {
+    text-decoration: underline;
+}
+
+.theme-classic .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 0 20px;
+    padding: 0 20px;
+    max-width: none;
+    width: 100%;
+    gap: 0;
+}
+
+.theme-classic .login-btn {
+    color: #00ff00;
+    text-decoration: none;
+}
+
+.theme-classic .header h1 {
+    font-size: 22px;
+    letter-spacing: normal;
+    text-transform: none;
+    margin: 0 20px;
+}
+
+.theme-classic input,
+.theme-classic button,
+.theme-classic select,
+.theme-classic textarea {
+    padding: 10px;
+    margin: 5px 0;
+    background: #222;
+    color: #ddd;
+    border: 1px solid #444;
+    box-sizing: border-box;
+    border-radius: 0;
+}
+
+.theme-classic input[type="text"],
+.theme-classic input[type="password"] {
+    width: 100%;
+}
+
+.theme-classic input::placeholder,
+.theme-classic textarea::placeholder {
+    color: #666;
+}
+
+.theme-classic textarea {
+    width: 100%;
+    height: 200px;
+    font-family: monospace;
+}
+
+.theme-classic .button-like {
+    display: inline-block;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    min-width: 80px;
+    padding: 0 16px;
+    background: #00ff00;
+    color: #000;
+    border: none;
+    cursor: pointer;
+}
+
+.theme-classic button {
+    background: #00ff00;
+    color: #000;
+    border: none;
+    cursor: pointer;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.theme-classic button:hover,
+.theme-classic .button-like:hover {
+    background: #00aa00;
+}
+
+.theme-classic .secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #333;
+    color: #00ff00;
+    border: 1px solid #00ff00;
+    text-decoration: none;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.theme-classic .secondary-btn:hover {
+    background: #444;
+}
+
+.theme-classic select {
+    display: inline-block;
+    appearance: auto;
+    -webkit-appearance: auto;
+    -moz-appearance: auto;
+    background-image: none;
+    padding-right: 12px;
+}
+
+.theme-classic .paste-list {
+    max-width: 800px;
+    margin: 0 auto;
+    display: block;
+}
+
+.theme-classic .paste-item {
+    border: 1px solid #333;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #111;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.theme-classic .paste-item a {
+    color: #00ff00;
+    text-decoration: none;
+}
+
+.theme-classic .paste-item a:hover {
+    text-decoration: underline;
+}
+
+.theme-classic .paste-meta {
+    font-size: 0.8em;
+    color: #666;
+}
+
+.theme-classic .new-form,
+.theme-classic .content {
+    width: 800px;
+    margin: 20px auto;
+    border: 1px solid #333;
+    padding: 20px;
+    background: #111;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.theme-classic .content {
+    width: 900px;
+}
+
+.theme-classic pre {
+    background: #1a1a1a;
+    padding: 10px;
+    overflow-x: auto;
+    border-radius: 0;
+    border: none;
+}
+
+.theme-classic .message,
+.theme-classic .error {
+    background: #222;
+    padding: 12px 16px;
+    margin: 20px auto;
+    border: 1px solid #00ff00;
+    max-width: 600px;
+    text-align: center;
+    box-shadow: 0 0 12px rgba(0, 255, 0, 0.2);
+}
+
+.theme-classic .message div {
+    margin-bottom: 8px;
+}
+
+.theme-classic .message input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    background: #111;
+    color: #00ff00;
+    border: 1px solid #00ff00;
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+
+.theme-classic .message .button-like {
+    margin-right: 10px;
+}
+
+.theme-classic .error {
+    color: red;
+    border-color: red;
+}
+
+.theme-classic .meta {
+    color: #666;
+    font-size: 0.8em;
+    margin-top: 10px;
+}
+
+.theme-classic .info-box {
+    background: #1b1b1b;
+    border: 1px solid #00aa00;
+    padding: 12px 16px;
+    margin-bottom: 15px;
+    color: #b0ffb0;
+    border-radius: 0;
+}
+
+.theme-classic .info-box code {
+    color: #fff;
+}
+
+.theme-classic .direct-link-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.theme-classic .direct-link-actions input {
+    flex: 1;
+    background: #111;
+    color: #00ff00;
+    border: 1px solid #00ff00;
+}
+
+.theme-classic .direct-link-actions .button-like {
+    margin: 0;
+}
+
+.theme-classic .danger-link {
+    color: red;
+}
+
+.theme-classic body.login-page,
+body.theme-classic.login-page {
+    max-width: 400px;
+    margin: 100px auto;
+}
+
+.theme-classic form {
+    display: block;
+}
+
+.theme-classic .form-row,
+.theme-classic .form-row--dual {
+    display: block;
+    gap: 0;
+}
+
+.theme-classic .form-row > *,
+.theme-classic .form-row--dual > * {
+    width: auto;
+    min-width: 0;
+    margin-right: 5px;
+}
+
+.theme-classic select {
+    appearance: auto;
+    -webkit-appearance: auto;
+    -moz-appearance: auto;
+    background-image: none;
+    padding-right: 10px;
+}
+
+.theme-classic .form-options {
+    display: block;
+}
+
+.theme-classic .form-options label {
+    margin-right: 15px;
+}
+
+.theme-classic .button-like,
+.theme-classic button {
+    width: auto;
+}

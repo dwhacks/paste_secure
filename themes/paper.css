@@ -1,0 +1,72 @@
+body.theme-paper {
+    --font-body: "IBM Plex Sans", "Source Serif Pro", serif;
+    --font-mono: "Iosevka", "JetBrains Mono", monospace;
+    --color-bg: linear-gradient(180deg, #fdf9f0 0%, #f7f1e6 55%, #f2eadc 100%);
+    --color-surface: rgba(255, 255, 255, 0.85);
+    --color-surface-alt: rgba(255, 255, 255, 0.95);
+    --color-border: rgba(138, 108, 78, 0.26);
+    --color-text: #3d2a12;
+    --color-text-muted: rgba(86, 64, 48, 0.62);
+    --color-accent: #c87b34;
+    --color-accent-hover: #e69c52;
+    --color-accent-contrast: #fff7ee;
+    --color-danger: #d94b4b;
+    --shadow-soft: 0 20px 40px -28px rgba(87, 60, 32, 0.45);
+    --shadow-strong: 0 28px 70px -40px rgba(120, 92, 60, 0.45);
+    --radius-lg: 18px;
+    --radius-md: 14px;
+    --radius-sm: 12px;
+}
+
+.theme-paper select {
+    appearance: auto;
+    -webkit-appearance: auto;
+    -moz-appearance: auto;
+    background-image: none;
+    padding-right: 12px;
+}
+
+body.theme-paper::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(circle at 12% 20%, rgba(232, 193, 145, 0.28) 0%, transparent 40%),
+        radial-gradient(circle at 88% 12%, rgba(204, 170, 193, 0.2) 0%, transparent 45%),
+        repeating-linear-gradient(180deg, rgba(104, 82, 60, 0.08) 0px, rgba(104, 82, 60, 0.05) 1px, transparent 1px, transparent 22px);
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+.theme-paper .header h1 {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+}
+
+.theme-paper .paste-item,
+.theme-paper .new-form,
+.theme-paper .content,
+.theme-paper .message {
+    backdrop-filter: blur(3px);
+}
+
+.theme-paper pre {
+    background: rgba(255, 252, 245, 0.9);
+    border: 1px dashed rgba(115, 85, 52, 0.35);
+}
+.theme-paper .login-btn {
+    border: 1px solid rgba(200, 123, 52, 0.35);
+    background: rgba(255, 255, 255, 0.6);
+    color: #8c4a14;
+    padding: 8px 14px;
+    border-radius: 12px;
+    box-shadow: 0 12px 28px -24px rgba(138, 108, 78, 0.45);
+    transition: background-color 140ms ease, box-shadow 180ms ease;
+}
+
+.theme-paper .login-btn:hover {
+    background: rgba(255, 244, 230, 0.85);
+    box-shadow: 0 18px 36px -24px rgba(138, 108, 78, 0.55);
+}

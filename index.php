@@ -1,8 +1,10 @@
 <?php
 require_once 'config.php';
+require_once 'theme.php';
 $message = '';
 session_start();
 $isLoggedIn = !empty($_SESSION['paste_admin']);
+$themeAssets = resolve_theme_assets($config);
 
 // Prevent caching
 header('Cache-Control: no-store, no-cache, must-revalidate');
@@ -120,13 +122,11 @@ function timeLeft($expires) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($config['site_name']); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-    <link rel="stylesheet" href="style.css">
-    <script defer src="encryption.js"></script>
-    <style>
-        textarea { height: 200px; }
-    </style>
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($themeAssets['base']); ?>">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($themeAssets['theme']); ?>">
+    <script defer src="<?php echo htmlspecialchars($themeAssets['script']); ?>"></script>
 </head>
-<body data-base-url="<?php echo htmlspecialchars($config['base_url']); ?>">
+<body class="<?php echo htmlspecialchars($themeAssets['body_class']); ?>" data-base-url="<?php echo htmlspecialchars($config['base_url']); ?>">
     <div class="header">
         <h1>📋 <?php echo htmlspecialchars($config['site_name']); ?></h1>
         <?php if ($isLoggedIn): ?>
@@ -149,24 +149,27 @@ function timeLeft($expires) {
 <?php if ($isLoggedIn): ?>
     <div class="new-form">
         <h3>New Paste</h3>
-        <form method="post" id="paste-form">
+        <form method="post" id="paste-form" autocomplete="off">
             <input type="hidden" name="action" value="create">
-            <input type="text" name="filename" placeholder="Filename (optional)"><br>
-            <textarea name="content" placeholder="Paste content here..."></textarea><br>
-            <select name="syntax">
-                <option value="plaintext">Plain Text</option>
-                <option value="code">Code (auto-detect)</option>
-            </select>
-            <select name="expiry" id="expirySelect">
-                <option value="never">Never expire</option>
-                <option value="5min">5 minutes</option>
-                <option value="1hour">1 hour</option>
-                <option value="1day">1 day</option>
-                <option value="1week">1 week</option>
-            </select>
-            <br>
-            <label><input type="checkbox" name="burn" id="burnCheck" onchange="toggleExpiry()"> Burn after reading</label>
-            <label style="margin-left: 15px;"><input type="checkbox" name="hidden"> Hidden (only visible when logged in)</label>
+            <input type="text" name="filename" placeholder="Filename (optional)" autocomplete="off">
+            <textarea name="content" placeholder="Paste content here..."></textarea>
+            <div class="form-row form-row--dual">
+                <select name="syntax">
+                    <option value="plaintext">Plain Text</option>
+                    <option value="code">Code (auto-detect)</option>
+                </select>
+                <select name="expiry" id="expirySelect">
+                    <option value="never">Never expire</option>
+                    <option value="5min">5 minutes</option>
+                    <option value="1hour">1 hour</option>
+                    <option value="1day">1 day</option>
+                    <option value="1week">1 week</option>
+                </select>
+            </div>
+            <div class="form-options">
+                <label class="checkbox-inline"><input type="checkbox" name="burn" id="burnCheck" onchange="toggleExpiry()"> Burn after reading</label>
+                <label class="checkbox-inline"><input type="checkbox" name="hidden"> Hidden (only visible when logged in)</label>
+            </div>
             <input type="hidden" name="is_encrypted" value="0">
             <input type="hidden" name="iv" value="">
             <script>
@@ -175,7 +178,6 @@ function timeLeft($expires) {
                 }
                 toggleExpiry();
             </script>
-            <br><br>
             <button type="submit" name="create" class="button-like">Create Paste</button>
         </form>
     </div>
@@ -199,7 +201,7 @@ function timeLeft($expires) {
                         <?php if (!empty($paste['hidden'])): ?> - 🔒<?php endif; ?>
                     </span>
                     <?php if ($isLoggedIn): ?>
-                        <a href="delete.php?id=<?php echo $paste['id']; ?>" style="color: red; margin-left: 10px;" onclick="return confirm('Delete this paste?')">[Delete]</a>
+                        <a href="delete.php?id=<?php echo $paste['id']; ?>" class="danger-link" onclick="return confirm('Delete this paste?')">[Delete]</a>
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>

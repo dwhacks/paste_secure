@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once 'theme.php';
 
 $id = $_GET['id'] ?? '';
 $file = rtrim($config['data_dir'], '/')."/{$id}.json";
@@ -43,7 +44,7 @@ if (!empty($data['encrypted'])) {
 </head>
 <body data-base-url="<?php echo $baseUrl; ?>" data-raw="1">
     <div id="paste-data" data-id="<?php echo $idEsc; ?>" data-encrypted="1" data-content="<?php echo $contentEsc; ?>" data-iv="<?php echo $ivEsc; ?>" data-plain=""></div>
-    <script src="encryption.js"></script>
+    <script src="<?php echo htmlspecialchars(asset_url('encryption.js')); ?>"></script>
 </body>
 </html>
 <?php

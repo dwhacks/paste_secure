@@ -26,11 +26,22 @@ content is encrypted in the browser before it ever touches the server, keeping
      - `admin_password` (plain text; the application hashes it on first login)
      - `site_name`
      - `base_url` (include trailing slash; e.g. `https://example.com/paste/`)
+     - `theme` (`terminal`, `paper`, `midnight`, or `classic`; add more by dropping `*.css` files into `themes/`)
    - Ensure the `data/` directory exists and is writable by your web server.
 
 3. **Serve the application**
-   - Development: `php -S localhost:8000`
+   - Development preview: `php -S localhost:8000`
    - Production: deploy under HTTPS (required for Web Crypto).
+
+### Themes
+
+- Switch looks by changing the `theme` value in `config.php`, then refresh your browser.
+- Available themes ship in `themes/`:
+  - `terminal` — amber CRT look inspired by retro Apple consoles.
+  - `paper` — warm notebook-inspired palette with soft shadows.
+  - `midnight` — deep blue glassmorphism with neon accents.
+  - `classic` — original standalone Secure Paste styling.
+- To create your own, duplicate an existing file in `themes/`, adjust the CSS variables, and point `theme` to the new filename (without `.css`).
 
 4. **Usage**
    - Visit `/login.php`, enter the admin password, and create pastes from the

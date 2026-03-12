@@ -1,0 +1,65 @@
+body.theme-midnight {
+    --font-body: "Space Grotesk", "IBM Plex Sans", sans-serif;
+    --font-mono: "Space Mono", "JetBrains Mono", monospace;
+    --color-bg: radial-gradient(circle at 50% -10%, #1a2a6c 0%, #0f172a 55%, #060a14 100%);
+    --color-surface: rgba(9, 21, 46, 0.78);
+    --color-surface-alt: rgba(15, 28, 58, 0.85);
+    --color-border: rgba(123, 149, 255, 0.2);
+    --color-text: #dce8ff;
+    --color-text-muted: rgba(198, 214, 255, 0.7);
+    --color-accent: #7ba5ff;
+    --color-accent-hover: #98bdff;
+    --color-accent-contrast: #04123b;
+    --color-danger: #ff7a99;
+    --shadow-soft: 0 24px 48px -28px rgba(20, 44, 95, 0.65);
+    --shadow-strong: 0 34px 72px -30px rgba(10, 22, 50, 0.72);
+    --radius-lg: 20px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+}
+
+.theme-midnight select {
+    appearance: auto;
+    -webkit-appearance: auto;
+    -moz-appearance: auto;
+    background-image: none;
+    padding-right: 12px;
+}
+
+body.theme-midnight::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+        linear-gradient(125deg, rgba(97, 149, 255, 0.18) 0%, transparent 40%),
+        radial-gradient(circle at 20% 85%, rgba(132, 92, 255, 0.22) 0%, transparent 40%),
+        repeating-linear-gradient(140deg, rgba(98, 139, 255, 0.08) 0px, rgba(98, 139, 255, 0.08) 2px, transparent 2px, transparent 16px);
+    pointer-events: none;
+}
+
+.theme-midnight .paste-item,
+.theme-midnight .new-form,
+.theme-midnight .content,
+.theme-midnight .message,
+.theme-midnight .error {
+    backdrop-filter: blur(8px);
+}
+
+.theme-midnight pre {
+    background: rgba(15, 30, 60, 0.85);
+}
+.theme-midnight .login-btn {
+    border: 1px solid rgba(123, 149, 255, 0.4);
+    background: rgba(15, 28, 58, 0.75);
+    color: #a4bcff;
+    padding: 8px 14px;
+    border-radius: 12px;
+    box-shadow: 0 16px 36px -26px rgba(50, 86, 170, 0.6);
+    transition: background-color 160ms ease, box-shadow 200ms ease;
+}
+
+.theme-midnight .login-btn:hover {
+    background: rgba(25, 40, 80, 0.85);
+    box-shadow: 0 22px 46px -26px rgba(70, 102, 190, 0.72);
+}

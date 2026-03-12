@@ -1,9 +1,11 @@
 <?php
 require_once 'config.php';
+require_once 'theme.php';
 session_start();
 $isLoggedIn = !empty($_SESSION['paste_admin']);
 $id = $_GET['id'] ?? '';
 $error = '';
+$themeAssets = resolve_theme_assets($config);
 
 // Prevent caching
 header('Cache-Control: no-store, no-cache, must-revalidate');
@@ -87,13 +89,14 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
     <title><?php echo htmlspecialchars($config['site_name']); ?> - <?php echo htmlspecialchars($id); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css?v=2">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js?v=2"></script>
-    <script defer src="encryption.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <script defer src="<?php echo htmlspecialchars($themeAssets['script']); ?>"></script>
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($themeAssets['base']); ?>">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($themeAssets['theme']); ?>">
     <style>
         textarea { height: 300px; }
     </style>
 </head>
-<body data-base-url="<?php echo htmlspecialchars($config['base_url']); ?>">
+<body class="<?php echo htmlspecialchars($themeAssets['body_class']); ?>" data-base-url="<?php echo htmlspecialchars($config['base_url']); ?>">
 <?php if ($data && $data['burn']): ?>
     <script>alert('Warning: This paste will be deleted after being viewed. Close this message and refresh to delete it.');</script>
 <?php endif; ?>
@@ -103,7 +106,7 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
             <span>
                 <a href="index.php?logout=1">Logout</a>
                 |
-                <a href="<?php echo $config['base_url']; ?>delete.php?id=<?php echo $id; ?>" style="color: red;" onclick="return confirm('Delete this paste?')">Delete</a>
+                <a href="<?php echo $config['base_url']; ?>delete.php?id=<?php echo $id; ?>" class="danger-link" onclick="return confirm('Delete this paste?')">Delete</a>
             </span>
         <?php else: ?>
             <a href="login.php">Login to edit</a>
@@ -123,10 +126,10 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
                     This paste is end-to-end encrypted. Copy the direct link (including the part after the <code>#</code>). Without it the contents cannot be recovered.
                 </div>
             <?php endif; ?>
-            <div style="margin: 15px 0;">
+            <div class="direct-link-block">
                 <label for="direct-link">Direct link:</label>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <input id="direct-link" type="text" style="flex:1" data-base="<?php echo htmlspecialchars($config['base_url'] . 'view.php?id=' . $id); ?>" value="<?php echo htmlspecialchars($config['base_url'] . 'view.php?id=' . $id); ?>" readonly>
+                <div class="direct-link-actions">
+                    <input id="direct-link" type="text" data-base="<?php echo htmlspecialchars($config['base_url'] . 'view.php?id=' . $id); ?>" value="<?php echo htmlspecialchars($config['base_url'] . 'view.php?id=' . $id); ?>" readonly>
                     <button id="copy-btn" type="button" onclick="copyLink()" class="button-like">Copy</button>
                     <a href="<?php echo htmlspecialchars($config['base_url'] . 'raw.php?id=' . $id); ?>" target="_blank" class="secondary-btn button-like">Raw</a>
                 </div>
@@ -150,15 +153,19 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
                     <pre><code id="decrypted-view" class="hljs"><?php echo $isEncryptedData ? 'Encrypted paste - waiting for key.' : htmlspecialchars($data['content']); ?></code></pre>
                 </div>
                 <div id="edit-mode">
-                    <form method="post" id="edit-form">
-                        <input type="hidden" name="action" value="update">
-                        <input type="text" name="filename" value="<?php echo htmlspecialchars($data['filename'] ?? ''); ?>" placeholder="Filename (optional)"><br>
-                        <textarea id="content" name="content" placeholder="<?php echo $isEncryptedData ? 'Content will appear after decryption' : 'Edit content'; ?>"><?php echo $isEncryptedData ? '' : htmlspecialchars($data['content']); ?></textarea><br>
-                        <select name="syntax">
-                            <option value="plaintext" <?php echo 'plaintext' === $data['syntax'] ? 'selected' : ''; ?>>Plain Text</option>
-                            <option value="code" <?php echo 'code' === $data['syntax'] ? 'selected' : ''; ?>>Code (auto-detect)</option>
-                        </select>
-                        <label><input type="checkbox" name="hidden" <?php echo !empty($data['hidden']) ? 'checked' : ''; ?>> Hidden (only visible when logged in)</label><br><br>
+                     <form method="post" id="edit-form" autocomplete="off">
+                         <input type="hidden" name="action" value="update">
+                         <input type="text" name="filename" value="<?php echo htmlspecialchars($data['filename'] ?? ''); ?>" placeholder="Filename (optional)" autocomplete="off">
+                        <textarea id="content" name="content" placeholder="<?php echo $isEncryptedData ? 'Content will appear after decryption' : 'Edit content'; ?>"><?php echo $isEncryptedData ? '' : htmlspecialchars($data['content']); ?></textarea>
+                        <div class="form-row">
+                            <select name="syntax">
+                                <option value="plaintext" <?php echo 'plaintext' === $data['syntax'] ? 'selected' : ''; ?>>Plain Text</option>
+                                <option value="code" <?php echo 'code' === $data['syntax'] ? 'selected' : ''; ?>>Code (auto-detect)</option>
+                            </select>
+                        </div>
+                        <div class="form-options">
+                            <label class="checkbox-inline"><input type="checkbox" name="hidden" <?php echo !empty($data['hidden']) ? 'checked' : ''; ?>> Hidden (only visible when logged in)</label>
+                        </div>
                         <input type="hidden" name="is_encrypted" value="<?php echo $isEncryptedData ? '1' : '0'; ?>">
                         <input type="hidden" name="iv" value="<?php echo htmlspecialchars($ivValue); ?>">
                         <button type="submit" name="update" class="button-like">Save Changes</button>
