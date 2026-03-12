@@ -320,6 +320,7 @@ function handleCreationMessage() {
       const rawOnly = document.body.dataset.raw === '1';
       if (rawOnly) {
         document.body.textContent = plainText;
+        document.body.style.whiteSpace = 'pre';
       } else if (display) {
         display.textContent = plainText;
         highlight(display);

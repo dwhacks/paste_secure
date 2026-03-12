@@ -51,5 +51,8 @@ if (!empty($data['encrypted'])) {
     exit;
 }
 
+$content = str_replace(["\r\n", "\r"], "\n", $data['content']);
+$content = str_replace("\n", "\r\n", $content);
+
 header('Content-Type: text/plain; charset=utf-8');
-echo $data['content'];
+echo $content;
