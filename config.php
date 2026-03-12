@@ -15,7 +15,7 @@ $config['default_expiry'] = 'never';
 $config['site_name'] = 'My Secure Pastebin';
 
 // Base URL for generating full links (include trailing slash)
-$config['base_url'] = 'http://localhost:8000/paste/';
+$config['base_url'] = 'http://localhost:8000/';
 
 // UI theme (matches a file name in themes/*.css)
 $config['theme'] = 'terminal'; // options: terminal, paper, midnight, classic

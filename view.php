@@ -89,6 +89,8 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
     <title><?php echo htmlspecialchars($config['site_name']); ?> - <?php echo htmlspecialchars($id); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css?v=2">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js?v=2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
     <script defer src="<?php echo htmlspecialchars($themeAssets['script']); ?>"></script>
     <link rel="stylesheet" href="<?php echo htmlspecialchars($themeAssets['base']); ?>">
     <link rel="stylesheet" href="<?php echo htmlspecialchars($themeAssets['theme']); ?>">
@@ -113,7 +115,7 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
         <?php endif; ?>
     </div>
     <?php if ($data): ?>
-        <div id="paste-data" data-id="<?php echo htmlspecialchars($id); ?>" data-encrypted="<?php echo $isEncryptedData ? '1' : '0'; ?>" data-content="<?php echo $isEncryptedData ? htmlspecialchars($data['content']) : ''; ?>" data-iv="<?php echo $isEncryptedData ? htmlspecialchars($ivValue) : ''; ?>" data-plain="<?php echo !$isEncryptedData ? htmlspecialchars($data['content']) : ''; ?>"></div>
+        <div id="paste-data" data-id="<?php echo htmlspecialchars($id); ?>" data-encrypted="<?php echo $isEncryptedData ? '1' : '0'; ?>" data-content="<?php echo $isEncryptedData ? htmlspecialchars($data['content']) : ''; ?>" data-iv="<?php echo $isEncryptedData ? htmlspecialchars($ivValue) : ''; ?>" data-plain="<?php echo !$isEncryptedData ? htmlspecialchars($data['content']) : ''; ?>" data-syntax="<?php echo htmlspecialchars($data['syntax'] ?? 'plaintext'); ?>"></div>
     <?php endif; ?>
     
     <?php if ($error): ?>
@@ -151,6 +153,7 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
                     <button type="button" onclick="showEdit()" class="button-like">Edit</button>
                 </div>
                 <div id="view-mode" style="display:none;">
+                    <div id="markdown-render" class="markdown-body" style="display:none;"></div>
                     <pre><code id="decrypted-view" class="hljs"><?php echo $isEncryptedData ? 'Encrypted paste - waiting for key.' : htmlspecialchars($data['content']); ?></code></pre>
                 </div>
                 <div id="edit-mode">
@@ -162,6 +165,7 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
                             <select name="syntax">
                                 <option value="plaintext" <?php echo 'plaintext' === $data['syntax'] ? 'selected' : ''; ?>>Plain Text</option>
                                 <option value="code" <?php echo 'code' === $data['syntax'] ? 'selected' : ''; ?>>Code (auto-detect)</option>
+                                <option value="markdown" <?php echo 'markdown' === $data['syntax'] ? 'selected' : ''; ?>>Markdown</option>
                             </select>
                         </div>
                         <div class="form-options">
@@ -183,6 +187,7 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
                     }
                 </script>
             <?php else: ?>
+                <div id="markdown-render" class="markdown-body" style="display:none;"></div>
                 <pre><code id="decrypted-view" class="hljs"><?php echo $isEncryptedData ? 'Encrypted paste - waiting for key.' : htmlspecialchars($data['content']); ?></code></pre>
             <?php endif; ?>
             

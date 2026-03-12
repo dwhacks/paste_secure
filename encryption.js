@@ -257,6 +257,58 @@ function handleCreationMessage() {
     }
   }
 
+  function renderContent(plainText) {
+    const dataElem = document.getElementById('paste-data');
+    const syntax = dataElem ? (dataElem.dataset.syntax || 'plaintext') : 'plaintext';
+    const markdownContainer = document.getElementById('markdown-render');
+    const codeContainer = document.getElementById('decrypted-view');
+    const detectedContainer = document.getElementById('detected-language');
+    const detectedValue = document.getElementById('detected-language-value');
+
+    if ('markdown' === syntax && markdownContainer) {
+      markdownContainer.style.display = '';
+      if (codeContainer && codeContainer.parentElement) {
+        codeContainer.textContent = '';
+        codeContainer.parentElement.style.display = 'none';
+      }
+
+      if (detectedContainer) {
+        detectedContainer.style.display = 'none';
+        if (detectedValue) {
+          detectedValue.textContent = '';
+        }
+      }
+
+      try {
+        const html = window.marked ? window.marked.parse(plainText) : plainText;
+        const sanitized = window.DOMPurify ? window.DOMPurify.sanitize(html) : html;
+        markdownContainer.innerHTML = sanitized;
+        if (window.hljs) {
+          markdownContainer.querySelectorAll('pre code').forEach((block) => {
+            window.hljs.highlightElement(block);
+          });
+        }
+      } catch (err) {
+        console.error('Failed to render markdown', err);
+        markdownContainer.textContent = plainText;
+      }
+      return;
+    }
+
+    if (markdownContainer) {
+      markdownContainer.style.display = 'none';
+      markdownContainer.innerHTML = '';
+    }
+
+    if (codeContainer) {
+      if (codeContainer.parentElement) {
+        codeContainer.parentElement.style.display = '';
+      }
+      codeContainer.textContent = plainText;
+      highlight(codeContainer);
+    }
+  }
+
   async function decryptIfNeeded() {
     const dataElem = document.getElementById('paste-data');
     if (!dataElem) {
@@ -269,10 +321,7 @@ function handleCreationMessage() {
     const pasteId = dataElem.dataset.id || '';
 
     if (!encrypted) {
-      if (display) {
-        display.textContent = dataElem.dataset.plain || '';
-        highlight(display);
-      }
+      renderContent(dataElem.dataset.plain || '');
       updateLinkInput();
       return;
     }
@@ -335,9 +384,8 @@ function handleCreationMessage() {
       if (rawOnly) {
         document.body.textContent = plainText;
         document.body.style.whiteSpace = 'pre';
-      } else if (display) {
-        display.textContent = plainText;
-        highlight(display);
+      } else {
+        renderContent(plainText);
       }
 
       const textarea = document.getElementById('content');

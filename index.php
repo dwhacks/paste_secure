@@ -157,6 +157,7 @@ function timeLeft($expires) {
                 <select name="syntax">
                     <option value="plaintext">Plain Text</option>
                     <option value="code">Code (auto-detect)</option>
+                    <option value="markdown">Markdown</option>
                 </select>
                 <select name="expiry" id="expirySelect">
                     <option value="never">Never expire</option>
