@@ -57,24 +57,59 @@ if ($data['burn'] && $data['views'] > 0) {
     unlink($config['data_dir'] . "/{$id}.json");
     $error = 'This paste has been burned and can no longer be viewed.';
     $data = null;
-} else {
-    // Increment view count
+}
+
+$needsConfirm = $data && !empty($data['burn']) && empty($_GET['confirmed']) && $_SERVER['REQUEST_METHOD'] === 'GET';
+if ($needsConfirm) {
+    $confirmUrl = 'view.php?id=' . urlencode($id) . '&confirmed=1';
+    $listUrl = $config['base_url'];
+    echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Burn Warning</title></head><body>';
+    echo '<script>';
+    echo 'var proceed = window.confirm("Warning: this paste will be deleted after it is viewed. Press OK to continue or Cancel to return to the paste list.");';
+    echo 'window.location.replace(proceed ? ' . json_encode($confirmUrl) . ' : ' . json_encode($listUrl) . ');';
+    echo '</script></body></html>';
+    exit;
+}
+
+if ($data && $_SERVER['REQUEST_METHOD'] === 'GET') {
     $data['views']++;
     file_put_contents($config['data_dir'] . "/{$id}.json", json_encode($data));
+    if (!empty($data['burn'])) {
+        register_shutdown_function(function() use ($config, $id) {
+            $file = $config['data_dir'] . "/{$id}.json";
+            if (file_exists($file)) {
+                @unlink($file);
+            }
+        });
+    }
 }
 
 // Handle update (logged in only)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isLoggedIn && (($_POST['action'] ?? '') === 'update') && $data) {
     $isEncryptedPost = isset($_POST['is_encrypted']) && $_POST['is_encrypted'] === '1';
     $ivPost = $isEncryptedPost ? (preg_replace('/[^A-Za-z0-9\/_+=-]/', '', $_POST['iv'] ?? '') ?? '') : '';
-    $data['content'] = $_POST['content'] ?? '';
+    $contentField = $_POST['content'] ?? '';
+    $wasPlain = empty($data['encrypted']);
+    $isStorePlain = !empty($config['allow_unencrypted']) && isset($_POST['store_plain']) && $_POST['store_plain'] === '1';
+
+    $data['content'] = $contentField;
+    if ($isStorePlain) {
+        $data['encrypted'] = false;
+        $data['iv'] = '';
+    } else {
+        $data['encrypted'] = $isEncryptedPost;
+        $data['iv'] = $isEncryptedPost ? $ivPost : '';
+    }
+
     $data['filename'] = $_POST['filename'] ?? '';
     $data['syntax'] = $_POST['syntax'] ?? 'plaintext';
     $data['hidden'] = isset($_POST['hidden']);
-    $data['encrypted'] = $isEncryptedPost;
-    $data['iv'] = $isEncryptedPost ? $ivPost : '';
     file_put_contents($config['data_dir'] . "/{$id}.json", json_encode($data));
-    header('Location: view.php?id=' . $id);
+    if (!$isStorePlain && $wasPlain) {
+        header('Location: index.php?created=' . urlencode($id) . '&enc=1');
+    } else {
+        header('Location: index.php');
+    }
     exit;
 }
 
@@ -99,9 +134,6 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
     </style>
 </head>
 <body class="<?php echo htmlspecialchars($themeAssets['body_class']); ?>" data-base-url="<?php echo htmlspecialchars($config['base_url']); ?>">
-<?php if ($data && $data['burn']): ?>
-    <script>alert('Warning: This paste will be deleted after being viewed. Close this message and refresh to delete it.');</script>
-<?php endif; ?>
     <div class="header">
         <a href="<?php echo $config['base_url']; ?>">← Back to list</a>
         <?php if ($isLoggedIn): ?>
@@ -147,7 +179,7 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
                 <?php if (!empty($data['hidden'])): ?> | 🔒 Hidden<?php endif; ?>
             </p>
             
-            <?php if ($isLoggedIn): ?>
+            <?php if ($isLoggedIn && empty($data['burn'])): ?>
                 <div style="margin-bottom: 10px;">
                     <button type="button" onclick="showView()" class="button-like">View</button>
                     <button type="button" onclick="showEdit()" class="button-like">Edit</button>
@@ -157,7 +189,7 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
                     <pre><code id="decrypted-view" class="hljs"><?php echo $isEncryptedData ? 'Encrypted paste - waiting for key.' : htmlspecialchars($data['content']); ?></code></pre>
                 </div>
                 <div id="edit-mode">
-                     <form method="post" id="edit-form" autocomplete="off">
+                    <form method="post" id="edit-form" autocomplete="off" data-allow-unencrypted="<?php echo !empty($config['allow_unencrypted']) ? '1' : '0'; ?>">
                          <input type="hidden" name="action" value="update">
                          <input type="text" name="filename" value="<?php echo htmlspecialchars($data['filename'] ?? ''); ?>" placeholder="Filename (optional)" autocomplete="off">
                         <textarea id="content" name="content" placeholder="<?php echo $isEncryptedData ? 'Content will appear after decryption' : 'Edit content'; ?>"><?php echo $isEncryptedData ? '' : htmlspecialchars($data['content']); ?></textarea>
@@ -170,10 +202,14 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
                         </div>
                         <div class="form-options">
                             <label class="checkbox-inline"><input type="checkbox" name="hidden" <?php echo !empty($data['hidden']) ? 'checked' : ''; ?>> Hidden (only visible when logged in)</label>
+                            <?php if (!empty($config['allow_unencrypted']) && !$isEncryptedData): ?>
+                                <label class="checkbox-inline"><input type="checkbox" name="store_plain" value="1" checked> Keep unencrypted</label>
+                            <?php endif; ?>
                         </div>
                         <input type="hidden" name="is_encrypted" value="<?php echo $isEncryptedData ? '1' : '0'; ?>">
                         <input type="hidden" name="iv" value="<?php echo htmlspecialchars($ivValue); ?>">
                         <button type="submit" name="update" class="button-like">Save Changes</button>
+                        <div class="encryption-notice" style="display:none; margin-top:10px; font-size:0.9em; color:#ffcf81;">Paste re-encrypted. Copy the new link from the banner.</div>
                     </form>
                 </div>
                 <script>
@@ -187,8 +223,10 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
                     }
                 </script>
             <?php else: ?>
-                <div id="markdown-render" class="markdown-body" style="display:none;"></div>
-                <pre><code id="decrypted-view" class="hljs"><?php echo $isEncryptedData ? 'Encrypted paste - waiting for key.' : htmlspecialchars($data['content']); ?></code></pre>
+                <div id="view-mode" style="display:block;">
+                    <div id="markdown-render" class="markdown-body" style="display:none;"></div>
+                    <pre><code id="decrypted-view" class="hljs"><?php echo $isEncryptedData ? 'Encrypted paste - waiting for key.' : htmlspecialchars($data['content']); ?></code></pre>
+                </div>
             <?php endif; ?>
             
             <script>

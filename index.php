@@ -72,10 +72,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isLoggedIn && (($_POST['action'] ?
 
         file_put_contents($config['data_dir'] . "/{$id}.json", json_encode($paste));
         if ($burn) {
-            $query = '?created=' . urlencode($id);
-            if ($isEncrypted) {
-                $query .= '&enc=1';
-            }
+                        $query = '?created=' . urlencode($id) . '&burn=1';
+                        if ($isEncrypted) {
+                            $query .= '&enc=1';
+                        }
             header('Location: index.php' . $query);
         } else {
             header('Location: view.php?id=' . $id);
@@ -141,15 +141,30 @@ function timeLeft($expires) {
         $createdEnc = isset($_GET['enc']) && $_GET['enc'] === '1';
     ?>
     <?php if ($message || $createdId): ?>
-        <div class="message" <?php if ($createdId): ?>data-created-id="<?php echo htmlspecialchars($createdId); ?>" data-created-enc="<?php echo $createdEnc ? '1' : '0'; ?>"<?php endif; ?>>
-            <?php echo $message ? htmlspecialchars($message) : 'Paste created!'; ?>
+        <div class="message" <?php if ($createdId): ?>data-created-id="<?php echo htmlspecialchars($createdId); ?>" data-created-enc="<?php echo $createdEnc ? '1' : '0'; ?>" data-created-burn="<?php echo !empty($_GET['burn']) ? '1' : '0'; ?>"<?php endif; ?>>
+            <?php
+                if ($message) {
+                    echo htmlspecialchars($message);
+                } else {
+                    if (!empty($_GET['burn'])) {
+                        echo '<span class="message-heading">Burn-after-reading paste created!</span>';
+                        echo '<span class="message-sub">Copy this link—the paste will vanish after it is viewed once:</span>';
+                    } elseif ($createdEnc) {
+                        echo '<span class="message-heading">Paste now encrypted!</span>';
+                        echo '<span class="message-sub">Copy the new link below:</span>';
+                    } else {
+                        echo '<span class="message-heading">Paste created!</span>';
+                        echo '<span class="message-sub">Copy and save this link:</span>';
+                    }
+                }
+            ?>
         </div>
     <?php endif; ?>
     
 <?php if ($isLoggedIn): ?>
     <div class="new-form">
         <h3>New Paste</h3>
-        <form method="post" id="paste-form" autocomplete="off">
+        <form method="post" id="paste-form" autocomplete="off" data-allow-unencrypted="<?php echo !empty($config['allow_unencrypted']) ? '1' : '0'; ?>">
             <input type="hidden" name="action" value="create">
             <input type="text" name="filename" placeholder="Filename (optional)" autocomplete="off">
             <textarea name="content" placeholder="Paste content here..."></textarea>
@@ -170,6 +185,9 @@ function timeLeft($expires) {
             <div class="form-options">
                 <label class="checkbox-inline"><input type="checkbox" name="burn" id="burnCheck" onchange="toggleExpiry()"> Burn after reading</label>
                 <label class="checkbox-inline"><input type="checkbox" name="hidden"> Hidden (only visible when logged in)</label>
+                <?php if (!empty($config['allow_unencrypted'])): ?>
+                    <label class="checkbox-inline"><input type="checkbox" name="store_plain" value="1"> Store unencrypted (no client-side encryption)</label>
+                <?php endif; ?>
             </div>
             <input type="hidden" name="is_encrypted" value="0">
             <input type="hidden" name="iv" value="">

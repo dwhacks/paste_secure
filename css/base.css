@@ -303,12 +303,30 @@ button:hover,
 
 .message {
     display: grid;
-    gap: 14px;
+    gap: 12px;
+}
+
+.message-heading {
+    font-weight: 600;
+}
+
+.message-sub {
+    opacity: 0.8;
 }
 
 .message input[type="text"] {
     width: 100%;
     background: var(--color-surface-alt);
+}
+
+.message .direct-link-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.message .direct-link-actions input {
+    flex: 1 1 auto;
 }
 
 .direct-link-block {

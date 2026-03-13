@@ -184,13 +184,14 @@ body.theme-classic a:hover {
 
 .theme-classic .message,
 .theme-classic .error {
-    background: #222;
+    background: #111;
     padding: 12px 16px;
     margin: 20px auto;
-    border: 1px solid #00ff00;
-    max-width: 600px;
+    border: 1px solid #333;
+    width: 800px;
     text-align: center;
-    box-shadow: 0 0 12px rgba(0, 255, 0, 0.2);
+    box-shadow: none;
+    border-radius: 0;
 }
 
 .theme-classic .message div {
@@ -204,11 +205,12 @@ body.theme-classic a:hover {
     color: #00ff00;
     border: 1px solid #00ff00;
     margin-bottom: 8px;
-    border-radius: 4px;
+    border-radius: 0;
 }
 
-.theme-classic .message .button-like {
-    margin-right: 10px;
+.theme-classic .message .button-like,
+.theme-classic .message .secondary-btn {
+    border-radius: 0;
 }
 
 .theme-classic .error {

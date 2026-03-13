@@ -19,3 +19,6 @@ $config['base_url'] = 'http://localhost:8000/';
 
 // UI theme (matches a file name in themes/*.css)
 $config['theme'] = 'terminal'; // options: terminal, paper, midnight, classic
+
+// Allow storing pastes without client-side encryption (true/false)
+$config['allow_unencrypted'] = false;

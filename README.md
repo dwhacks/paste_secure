@@ -20,11 +20,12 @@ content is encrypted in the browser before it ever touches the server, keeping
    ```
 
 2. **Configure**
-   - Open `config.php` and set:
-     - `admin_password` (plain text; the application hashes it on first login)
-     - `site_name`
-     - `base_url` (include trailing slash; e.g. `https://example.com/paste/`)
-     - `theme` (`terminal`, `paper`, `midnight`, or `classic`; add more by dropping `*.css` files into `themes/`)
+    - Open `config.php` and set:
+      - `admin_password` (plain text; the application hashes it on first login)
+      - `site_name`
+      - `base_url` (include trailing slash; e.g. `https://example.com/paste/`)
+      - `theme` (`terminal`, `paper`, `midnight`, or `classic`; add more by dropping `*.css` files into `themes/`)
+      - `allow_unencrypted` (`true` to let admins store plain pastes; when enabled, creators get a “Store unencrypted” checkbox)
    - Ensure the `data/` directory exists and is writable by your web server.
 
 3. **Serve the application**

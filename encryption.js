@@ -151,6 +151,7 @@ function handleCreationMessage() {
 
   const pasteId = message.dataset.createdId || '';
   const encrypted = message.dataset.createdEnc === '1';
+  const burn = message.dataset.createdBurn === '1';
   if (!pasteId) return;
 
   const baseAttr = document.body.dataset.baseUrl || document.body.dataset.pasteBase || '/paste/';
@@ -173,13 +174,32 @@ function handleCreationMessage() {
 
   if (encrypted && !key) {
     const warn = document.createElement('div');
-    warn.textContent = 'Paste created, but the encryption key was not found in this browser. Please copy the full URL (including the #key) from the previous page or regenerate the paste.';
+    warn.textContent = burn
+      ? 'Burn-after-reading paste created, but the encryption key was not found in this browser. Please copy the full URL (including the #key) immediately. Without it the paste will be lost after the first view.'
+      : 'Paste created, but the encryption key was not found in this browser. Please copy the full URL (including the #key) from the previous page or regenerate the paste.';
     message.appendChild(warn);
     return;
   }
 
-  const info = document.createElement('div');
-  info.textContent = 'Paste created! Copy and save this link:';
+  const heading = document.createElement('div');
+  heading.className = 'message-heading';
+  if (burn) {
+    heading.textContent = 'Burn-after-reading paste created!';
+  } else if (encrypted) {
+    heading.textContent = 'Paste now encrypted!';
+  } else {
+    heading.textContent = 'Paste created!';
+  }
+
+  const sub = document.createElement('div');
+  sub.className = 'message-sub';
+  if (burn) {
+    sub.textContent = 'Copy this link—the paste will vanish after it is viewed once:';
+  } else if (encrypted) {
+    sub.textContent = 'Copy the new link below:';
+  } else {
+    sub.textContent = 'Copy and save this link:';
+  }
 
   const input = document.createElement('input');
   input.type = 'text';
@@ -214,7 +234,11 @@ function handleCreationMessage() {
   openLink.className = 'button-like secondary-btn';
   openLink.textContent = 'Open';
 
-  message.append(info, input, copyBtn, openLink);
+  const actions = document.createElement('div');
+  actions.className = 'direct-link-actions';
+  actions.append(input, copyBtn, openLink);
+
+  message.append(heading, sub, actions);
 }
 
   async function encryptText(plainText, keyBytes, ivBytes) {
@@ -405,16 +429,37 @@ function handleCreationMessage() {
 
   function setupCreateForm() {
     const form = document.getElementById('paste-form');
-    if (!form || !cryptoAvailable) return;
-    setupFormEncryption(form, { isEdit: false });
+    if (!form) return;
+    const allowPlain = form.dataset.allowUnencrypted === '1';
+    if (!cryptoAvailable) {
+      if (allowPlain) {
+        // Ensure plain submissions stay marked as unencrypted
+        form.addEventListener('submit', () => {
+          const encInput = form.querySelector('input[name="is_encrypted"]');
+          if (encInput) encInput.value = '0';
+        }, { once: true });
+      }
+      return;
+    }
+    setupFormEncryption(form, { isEdit: false, allowPlain });
   }
 
   function setupEditForm() {
     const form = document.getElementById('edit-form');
-    if (!form || !cryptoAvailable) return;
+    if (!form) return;
+    if (!cryptoAvailable) {
+      // Ensure plaintext submissions remain marked unencrypted when crypto unavailable
+      form.addEventListener('submit', () => {
+        const encInput = form.querySelector('input[name="is_encrypted"]');
+        if (encInput) encInput.value = '0';
+      }, { once: true });
+      return;
+    }
     const dataElem = document.getElementById('paste-data');
     const pasteId = dataElem ? dataElem.dataset.id || '' : '';
-    setupFormEncryption(form, { isEdit: true, pasteId });
+    const initiallyEncrypted = dataElem ? dataElem.dataset.encrypted === '1' : true;
+    const allowPlain = form.dataset.allowUnencrypted === '1';
+    setupFormEncryption(form, { isEdit: true, pasteId, initiallyEncrypted, allowPlain });
   }
 
   function getKeyBytesFromUrl(url) {
@@ -423,7 +468,12 @@ function handleCreationMessage() {
   }
 
   function showNewKeyNotice() {
-    alert('A new encryption key was generated. Please save the updated link.');
+    const form = document.getElementById('edit-form');
+    if (!form) return;
+    const notice = form.querySelector('.encryption-notice');
+    if (notice) {
+      notice.style.display = '';
+    }
   }
 
   function setupFormEncryption(form, options) {
@@ -432,6 +482,21 @@ function handleCreationMessage() {
 
     const handler = async (event) => {
       event.preventDefault();
+
+      const allowPlain = !!options.allowPlain;
+      const plainCheckbox = allowPlain ? form.querySelector('input[name="store_plain"]') : null;
+      const storePlain = allowPlain && plainCheckbox && plainCheckbox.checked;
+      const skipEncryption = storePlain;
+
+      if (skipEncryption) {
+        const encInput = form.querySelector('input[name="is_encrypted"]');
+        if (encInput) encInput.value = '0';
+        const ivInput = form.querySelector('input[name="iv"]');
+        if (ivInput) ivInput.value = '';
+        form.removeEventListener('submit', handler);
+        form.submit();
+        return;
+      }
 
       try {
         let keyUrl = window.currentPasteKeyUrl || getKeyFromHash();
