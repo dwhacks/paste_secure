@@ -1,8 +1,10 @@
 <?php
 require_once 'config.php';
 require_once 'theme.php';
+require_once 'auth.php';
 session_start();
-$isLoggedIn = !empty($_SESSION['paste_admin']);
+$isLoggedIn = is_logged_in();
+$currentUsername = get_current_username();
 $id = $_GET['id'] ?? '';
 $error = '';
 $themeAssets = resolve_theme_assets($config);
@@ -43,6 +45,12 @@ if (!file_exists($dataFile)) {
 $data = json_decode(file_get_contents($dataFile), true);
 if (isset($data['key'])) {
     unset($data['key']);
+}
+
+// Check if hidden paste - only author can view
+if (!empty($data['hidden']) && (!$isLoggedIn || $data['author'] !== $currentUsername)) {
+    header('Location: index.php?error=notfound');
+    exit;
 }
 
 // Check if expired
@@ -136,11 +144,18 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
 <body class="<?php echo htmlspecialchars($themeAssets['body_class']); ?>" data-base-url="<?php echo htmlspecialchars($config['base_url']); ?>">
     <div class="header">
         <a href="<?php echo $config['base_url']; ?>">← Back to list</a>
-        <?php if ($isLoggedIn): ?>
+        <?php 
+        $canManage = $isLoggedIn && (is_admin($config) || $data['author'] === $currentUsername);
+        if ($canManage): 
+        ?>
             <span>
                 <a href="index.php?logout=1">Logout</a>
                 |
                 <a href="<?php echo $config['base_url']; ?>delete.php?id=<?php echo $id; ?>" class="danger-link" onclick="return confirm('Delete this paste?')">Delete</a>
+            </span>
+        <?php elseif ($isLoggedIn): ?>
+            <span>
+                <a href="index.php?logout=1">Logout</a>
             </span>
         <?php else: ?>
             <a href="login.php">Login to edit</a>
@@ -173,13 +188,14 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
                 Views: <?php echo $data['views']; ?> | 
                 Expires: <?php echo timeLeft($data['expires']); ?> |
                 Created: <?php echo date('Y-m-d H:i', $data['created']); ?>
+                <?php if (!empty($data['author'])): ?> | By: <?php echo htmlspecialchars($data['author']); ?><?php endif; ?>
                 <span id="detected-language" style="display:none;"> | Detected: <span id="detected-language-value"></span></span>
                 <?php if ($data['burn']): ?> | 🔥 Burn after reading<?php endif; ?>
                 <?php if ($isEncryptedData): ?> | 🔐 Encrypted<?php endif; ?>
                 <?php if (!empty($data['hidden'])): ?> | 🔒 Hidden<?php endif; ?>
             </p>
             
-            <?php if ($isLoggedIn && empty($data['burn'])): ?>
+            <?php if ($canManage && empty($data['burn'])): ?>
                 <div style="margin-bottom: 10px;">
                     <button type="button" onclick="showView()" class="button-like">View</button>
                     <button type="button" onclick="showEdit()" class="button-like">Edit</button>

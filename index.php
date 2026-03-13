@@ -1,9 +1,11 @@
 <?php
 require_once 'config.php';
 require_once 'theme.php';
+require_once 'auth.php';
 $message = '';
 session_start();
-$isLoggedIn = !empty($_SESSION['paste_admin']);
+$isLoggedIn = is_logged_in();
+$currentUsername = get_current_username();
 $themeAssets = resolve_theme_assets($config);
 
 // Prevent caching
@@ -67,7 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isLoggedIn && (($_POST['action'] ?
             'hidden' => $hidden,
             'encrypted' => $isEncrypted,
             'iv' => $isEncrypted ? $iv : '',
-            'views' => 0
+            'views' => 0,
+            'author' => $currentUsername
         ];
 
         file_put_contents($config['data_dir'] . "/{$id}.json", json_encode($paste));
@@ -129,11 +132,16 @@ function timeLeft($expires) {
 <body class="<?php echo htmlspecialchars($themeAssets['body_class']); ?>" data-base-url="<?php echo htmlspecialchars($config['base_url']); ?>">
     <div class="header">
         <h1>📋 <?php echo htmlspecialchars($config['site_name']); ?></h1>
-        <?php if ($isLoggedIn): ?>
-            <a href="?logout=1" class="login-btn">Logout</a>
-        <?php else: ?>
-            <a href="login.php" class="login-btn">Login to create</a>
-        <?php endif; ?>
+        <div class="login-section">
+            <?php if ($isLoggedIn): ?>
+                <span class="logged-in-as">Logged in as <?php echo htmlspecialchars($currentUsername); ?></span>
+            <?php endif; ?>
+            <?php if ($isLoggedIn): ?>
+                <a href="?logout=1" class="login-btn">Logout</a>
+            <?php else: ?>
+                <a href="login.php" class="login-btn">Login</a>
+            <?php endif; ?>
+        </div>
     </div>
 
     <?php
@@ -183,8 +191,8 @@ function timeLeft($expires) {
                 </select>
             </div>
             <div class="form-options">
-                <label class="checkbox-inline"><input type="checkbox" name="burn" id="burnCheck" onchange="toggleExpiry()"> Burn after reading</label>
-                <label class="checkbox-inline"><input type="checkbox" name="hidden"> Hidden (only visible when logged in)</label>
+                <label class="checkbox-inline"><input type="checkbox" name="burn" id="burnCheck" onchange="handleBurnChange()"> Burn after reading</label>
+                <label class="checkbox-inline"><input type="checkbox" name="hidden" id="hiddenCheck" onchange="handleHiddenChange()"> Hidden (only visible when logged in)</label>
                 <?php if (!empty($config['allow_unencrypted'])): ?>
                     <label class="checkbox-inline"><input type="checkbox" name="store_plain" value="1"> Store unencrypted (no client-side encryption)</label>
                 <?php endif; ?>
@@ -194,6 +202,21 @@ function timeLeft($expires) {
             <script>
                 function toggleExpiry() {
                     document.getElementById('expirySelect').disabled = document.getElementById('burnCheck').checked;
+                }
+                function handleBurnChange() {
+                    toggleExpiry();
+                    if (document.getElementById('burnCheck').checked) {
+                        document.getElementById('hiddenCheck').checked = false;
+                    }
+                }
+                function handleHiddenChange() {
+                    if (document.getElementById('hiddenCheck').checked) {
+                        document.getElementById('burnCheck').checked = false;
+                        document.getElementById('burnCheck').disabled = true;
+                        toggleExpiry();
+                    } else {
+                        document.getElementById('burnCheck').disabled = false;
+                    }
                 }
                 toggleExpiry();
             </script>
@@ -208,13 +231,19 @@ function timeLeft($expires) {
             <p>No pastes yet.</p>
         <?php else: ?>
             <?php foreach ($pastes as $paste): ?>
-                <?php if (!empty($paste['hidden']) && !$isLoggedIn) continue; ?>
+                <?php 
+                // Skip hidden pastes unless author is viewing
+                if (!empty($paste['hidden'])) {
+                    if (!$isLoggedIn || $paste['author'] !== $currentUsername) continue;
+                }
+                ?>
                 <div class="paste-item">
                     <a href="<?php echo htmlspecialchars($config['base_url'] . 'view.php?id=' . $paste['id']); ?>" data-paste-id="<?php echo htmlspecialchars($paste['id']); ?>"><?php echo !empty($paste['filename']) ? htmlspecialchars($paste['filename']) : htmlspecialchars($paste['id']); ?></a>
                     <span class="paste-meta">
                         - <?php echo 'code' === $paste['syntax'] ? 'Code' : 'Plain Text'; ?>
                         - <?php echo date('Y-m-d H:i', $paste['created']); ?>
                         - <?php echo timeLeft($paste['expires']); ?>
+                        <?php if (!empty($paste['author'])): ?> - by <?php echo htmlspecialchars($paste['author']); ?><?php endif; ?>
                         <?php if ($paste['burn']): ?> - 🔥<?php endif; ?>
                         <?php if (!empty($paste['encrypted'])): ?> - 🔐<?php endif; ?>
                         <?php if (!empty($paste['hidden'])): ?> - 🔒<?php endif; ?>

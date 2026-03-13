@@ -99,6 +99,17 @@ a:focus {
     transition: background-color var(--transition), border-color var(--transition);
 }
 
+.header .login-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header .logged-in-as {
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
 .header .login-btn:hover,
 .header .login-btn:focus {
     border-color: var(--color-accent);

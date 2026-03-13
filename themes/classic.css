@@ -39,7 +39,22 @@ body.theme-classic a:hover {
 
 .theme-classic .login-btn {
     color: #00ff00;
-    text-decoration: none;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.theme-classic .login-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.theme-classic .logged-in-as {
+    color: #888;
+    font-size: 0.85em;
 }
 
 .theme-classic .header h1 {
@@ -216,6 +231,15 @@ body.theme-classic a:hover {
 .theme-classic .error {
     color: red;
     border-color: red;
+    width: auto;
+    max-width: 300px;
+    margin: 10px auto;
+}
+
+.theme-classic.login-page .error {
+    width: auto;
+    max-width: 300px;
+    margin: 10px auto;
 }
 
 .theme-classic .meta {
