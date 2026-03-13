@@ -329,7 +329,14 @@ function handleCreationMessage() {
         codeContainer.parentElement.style.display = '';
       }
       codeContainer.textContent = plainText;
-      highlight(codeContainer);
+      if (syntax === 'code') {
+        highlight(codeContainer);
+      } else {
+        const detectedContainer = document.getElementById('detected-language');
+        if (detectedContainer) {
+          detectedContainer.style.display = 'none';
+        }
+      }
     }
   }
 
