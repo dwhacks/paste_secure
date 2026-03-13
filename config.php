@@ -5,8 +5,6 @@
 // in data/admin.hash on first use. CHANGE THIS!
 $config['admin_password'] = 'CHANGEME';
 
-
-
 // Data directory (where paste JSON files are stored)
 $config['data_dir'] = __DIR__ . '/data';
 
@@ -20,14 +18,7 @@ $config['site_name'] = 'My Secure Pastebin';
 $config['base_url'] = 'http://localhost:8000/';
 
 // UI theme (matches a file name in themes/*.css)
-$config['theme'] = 'classic'; // options: terminal, paper, midnight, classic
+$config['theme'] = 'terminal'; // options: terminal, paper, midnight, classic
 
 // Allow storing pastes without client-side encryption (true/false)
-$config['allow_unencrypted'] = false;
-
-// Additional users (username => password)
-// Plain text passwords will be hashed on first login and stored in data/user_hashes/
-// Or use password_hash('yourpassword', PASSWORD_DEFAULT) for pre-hashed passwords
-$config['users'] = [
-    // 'username' => 'password',
-];
+$config['allow_unencrypted'] = true;

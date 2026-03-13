@@ -135,6 +135,9 @@ function timeLeft($expires) {
         <div class="login-section">
             <?php if ($isLoggedIn): ?>
                 <span class="logged-in-as">Logged in as <?php echo htmlspecialchars($currentUsername); ?></span>
+                <?php if (!is_admin($config)): ?>
+                    <a href="password.php" class="login-btn">Change Password</a>
+                <?php endif; ?>
             <?php endif; ?>
             <?php if ($isLoggedIn): ?>
                 <a href="?logout=1" class="login-btn">Logout</a>

@@ -242,6 +242,14 @@ body.theme-classic a:hover {
     margin: 10px auto;
 }
 
+.theme-classic .message {
+    color: #00ff00;
+    border-color: #00ff00;
+    width: auto;
+    max-width: 300px;
+    margin: 10px auto;
+}
+
 .theme-classic .meta {
     color: #666;
     font-size: 0.8em;

@@ -22,6 +22,37 @@ function get_admin_password_hash(array $config): string
     return $hash;
 }
 
+function load_users_file(): array
+{
+    $usersFile = __DIR__ . '/users.php';
+    if (!file_exists($usersFile)) {
+        return [];
+    }
+    $users = include $usersFile;
+    if (!is_array($users)) {
+        return [];
+    }
+    return $users;
+}
+
+function save_users_file(array $users): void
+{
+    $usersFile = __DIR__ . '/users.php';
+    $content = "<?php\n// User accounts - one entry per user\n";
+    $content .= "// Format: 'username' => 'password' (plain text or bcrypt hash)\n";
+    $content .= "return [\n";
+    foreach ($users as $username => $password) {
+        // Don't escape bcrypt hashes - they contain $ that would be broken by addslashes
+        if (preg_match('/^\$2[ayb]\$.{56}$/', $password)) {
+            $content .= "    '" . addslashes($username) . "' => '" . $password . "',\n";
+        } else {
+            $content .= "    '" . addslashes($username) . "' => '" . addslashes($password) . "',\n";
+        }
+    }
+    $content = rtrim($content, ",\n") . "\n];\n";
+    file_put_contents($usersFile, $content);
+}
+
 function get_user_hash(array $config, string $username): ?string
 {
     if ($username === 'admin') {
@@ -39,8 +70,8 @@ function get_user_hash(array $config, string $username): ?string
         }
     }
 
-    // Check config for user (plain text or bcrypt hash)
-    $users = $config['users'] ?? [];
+    // Check users.php first, then config.php
+    $users = array_merge(load_users_file(), $config['users'] ?? []);
     $storedHash = $users[$username] ?? null;
 
     if ($storedHash === null) {
@@ -62,6 +93,32 @@ function get_user_hash(array $config, string $username): ?string
     chmod($hashFile, 0640);
 
     return $hash;
+}
+
+function update_user_password(string $username, string $newPassword, array $config): bool
+{
+    if ($username === 'admin') {
+        return false; // Admin password cannot be changed this way
+    }
+
+    $hashDir = rtrim($config['data_dir'], '/') . '/user_hashes';
+    if (!is_dir($hashDir)) {
+        mkdir($hashDir, 0775, true);
+    }
+
+    $hashFile = $hashDir . '/' . $username . '.hash';
+    $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
+    file_put_contents($hashFile, $newHash);
+    chmod($hashFile, 0640);
+
+    // Update users.php to store the hash instead of plain text
+    $users = load_users_file();
+    if (isset($users[$username])) {
+        $users[$username] = $newHash;
+        save_users_file($users);
+    }
+
+    return true;
 }
 
 function verify_password(string $password, ?string $hash): bool

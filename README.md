@@ -20,15 +20,28 @@ content is encrypted in the browser before it ever touches the server, keeping
    ```
 
 2. **Configure**
-    - Open `config.php` and set:
-      - `admin_password` (plain text; the application hashes it on first login)
-      - `site_name`
-      - `base_url` (include trailing slash; e.g. `https://example.com/paste/`)
-      - `theme` (`terminal`, `paper`, `midnight`, or `classic`; add more by dropping `*.css` files into `themes/`)
-      - `allow_unencrypted` (`true` to let admins store plain pastes; when enabled, creators get a “Store unencrypted” checkbox)
+   - Open `config.php` and set:
+     - `admin_password` (plain text; the application hashes it on first login)
+     - `site_name`
+     - `base_url` (include trailing slash; e.g. `https://example.com/paste/`)
+     - `theme` (`terminal`, `paper`, `midnight`, or `classic`; add more by dropping `*.css` files into `themes/`)
+     - `allow_unencrypted` (`true` to let admins store plain pastes; when enabled, creators get a "Store unencrypted" checkbox)
    - Ensure the `data/` directory exists and is writable by your web server.
 
-3. **Serve the application**
+3. **Add Users (Optional)**
+   - Create users in `users.php` (one entry per user):
+     ```php
+     return [
+         'john' => 'password123',
+         'jane' => 'anothertemppass',
+     ];
+     ```
+   - Plain text passwords will be hashed on first login and stored in `data/user_hashes/`
+   - The `users.php` file will be automatically updated with hashed passwords
+   - Users can change their password after logging in via "Change Password" link
+   - Admin password cannot be changed this way - update `config.php` directly
+
+4. **Serve the application**
    - Development preview: `php -S localhost:8000`
    - Production: deploy under HTTPS (required for Web Crypto).
 

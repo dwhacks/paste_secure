@@ -144,22 +144,19 @@ $ivValue = $isEncryptedData ? ($data['iv'] ?? '') : '';
 <body class="<?php echo htmlspecialchars($themeAssets['body_class']); ?>" data-base-url="<?php echo htmlspecialchars($config['base_url']); ?>">
     <div class="header">
         <a href="<?php echo $config['base_url']; ?>">← Back to list</a>
+        <div class="login-section">
         <?php 
         $canManage = $isLoggedIn && (is_admin($config) || $data['author'] === $currentUsername);
         if ($canManage): 
         ?>
-            <span>
-                <a href="index.php?logout=1">Logout</a>
-                |
                 <a href="<?php echo $config['base_url']; ?>delete.php?id=<?php echo $id; ?>" class="danger-link" onclick="return confirm('Delete this paste?')">Delete</a>
-            </span>
+                <a href="index.php?logout=1" class="login-btn">Logout</a>
         <?php elseif ($isLoggedIn): ?>
-            <span>
-                <a href="index.php?logout=1">Logout</a>
-            </span>
+                <a href="index.php?logout=1" class="login-btn">Logout</a>
         <?php else: ?>
-            <a href="login.php">Login to edit</a>
+                <a href="login.php" class="login-btn">Login to edit</a>
         <?php endif; ?>
+        </div>
     </div>
     <?php if ($data): ?>
         <div id="paste-data" data-id="<?php echo htmlspecialchars($id); ?>" data-encrypted="<?php echo $isEncryptedData ? '1' : '0'; ?>" data-content="<?php echo $isEncryptedData ? htmlspecialchars($data['content']) : ''; ?>" data-iv="<?php echo $isEncryptedData ? htmlspecialchars($ivValue) : ''; ?>" data-plain="<?php echo !$isEncryptedData ? htmlspecialchars($data['content']) : ''; ?>" data-syntax="<?php echo htmlspecialchars($data['syntax'] ?? 'plaintext'); ?>"></div>

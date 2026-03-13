@@ -4,5 +4,8 @@ data/
 # Password hash generated from config admin_password
 data/admin.hash
 
+# User accounts file (contains passwords - do not commit)
+users.php
+
 # PHP built-in server artifacts
 *.log
