@@ -7,5 +7,8 @@ data/admin.hash
 # User accounts file (contains passwords - do not commit)
 users.php
 
+# Server-specific config (copy config.example.php and rename to config.php)
+config.php
+
 # PHP built-in server artifacts
 *.log

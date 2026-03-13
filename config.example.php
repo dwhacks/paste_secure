@@ -1,5 +1,6 @@
 <?php
 // Paste Configuration
+// Copy this file to config.php and edit the values below
 
 // Admin password (plain text). It will be securely hashed and stored
 // in data/admin.hash on first use. CHANGE THIS!
